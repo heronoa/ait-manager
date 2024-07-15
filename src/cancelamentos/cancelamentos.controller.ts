@@ -10,15 +10,11 @@ import {
 import { CancelamentosService } from './cancelamentos.service';
 import { CreateCancelamentoDto } from './dto/create-cancelamento.dto';
 import { UpdateCancelamentoDto } from './dto/update-cancelamento.dto';
-import { AitsService } from 'src/aits/aits.service';
-import { UpdateAitDto } from 'src/aits/dto/update-ait.dto';
+import { Cancelamento } from './entities/cancelamento.entity';
 
 @Controller('cancelamentos')
 export class CancelamentosController {
-  constructor(
-    private readonly cancelamentosService: CancelamentosService,
-    private readonly aitsService: AitsService,
-  ) {}
+  constructor(private readonly cancelamentosService: CancelamentosService) {}
 
   @Post()
   create(@Body() createCancelamentoDto: CreateCancelamentoDto) {
@@ -26,12 +22,12 @@ export class CancelamentosController {
   }
 
   @Get()
-  findAll() {
+  findAll(): Promise<Cancelamento[]> {
     return this.cancelamentosService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string): Promise<Cancelamento> {
     return this.cancelamentosService.findOne(id);
   }
 
@@ -40,22 +36,6 @@ export class CancelamentosController {
     @Param('id') id: string,
     @Body() updateCancelamentoDto: UpdateCancelamentoDto,
   ) {
-    if (updateCancelamentoDto.aceita === true) {
-      const newAit = {
-        status: 'CANCELADO',
-        id: updateCancelamentoDto.aitId,
-        nome: undefined,
-        data: undefined,
-        nome_do_agente: undefined,
-        nome_do_condutor: undefined,
-      };
-
-      this.aitsService.update(
-        updateCancelamentoDto.aitId,
-        new UpdateAitDto(newAit),
-      );
-    }
-
     return this.cancelamentosService.update(id, updateCancelamentoDto);
   }
 

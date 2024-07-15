@@ -15,8 +15,13 @@ export class AitsService {
     private readonly sqsService: MessageProducer,
   ) {}
 
-  create(createAitDto: CreateAitDto) {
-    return this.prismaService.ait.create({ data: createAitDto });
+  async create(createAitDto: CreateAitDto) {
+    try {
+      this.sendAitCreationMessage(JSON.stringify(createAitDto));
+      return await this.prismaService.ait.create({ data: createAitDto });
+    } catch (error) {
+      throw new NotFoundException();
+    }
   }
 
   findAll() {

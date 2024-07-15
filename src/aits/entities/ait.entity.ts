@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 export class Ait implements Prisma.AitUncheckedCreateInput {
   id?: string;
   nome: string;
-  data: Date;
+  data?: Date;
   nome_do_agente: string;
   nome_do_condutor: string;
   status: string;

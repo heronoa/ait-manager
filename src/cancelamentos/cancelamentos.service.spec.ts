@@ -4,6 +4,9 @@ import { CreateCancelamentoDto } from './dto/create-cancelamento.dto';
 import { UpdateCancelamentoDto } from './dto/update-cancelamento.dto';
 import { PrismaService } from 'src/db/prisma.service';
 import { NotFoundException } from '@nestjs/common';
+import { Cancelamento } from './entities/cancelamento.entity';
+import { MessageProducer } from 'src/sqs/producer/producer.service';
+import { AitsService } from 'src/aits/aits.service';
 
 const fakeCancelamentos: Cancelamento[] = [
   {
@@ -37,7 +40,9 @@ const prismaMock = {
   },
 };
 
-import { Cancelamento } from './entities/cancelamento.entity';
+const sqsMock = {
+  sendMessage: jest.fn(),
+};
 
 describe('CancelamentoService', () => {
   let service: CancelamentosService;
@@ -47,7 +52,9 @@ describe('CancelamentoService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CancelamentosService,
+        AitsService,
         { provide: PrismaService, useValue: prismaMock },
+        { provide: MessageProducer, useValue: sqsMock },
       ],
     }).compile();
 
@@ -60,7 +67,7 @@ describe('CancelamentoService', () => {
   });
 
   describe('findAll', () => {
-    it(`should return an array of posts`, async () => {
+    it(`should return an array of cancelamentos`, async () => {
       const response = await service.findAll();
 
       expect(response).toEqual(fakeCancelamentos);
@@ -70,7 +77,7 @@ describe('CancelamentoService', () => {
   });
 
   describe('findOne', () => {
-    it(`should return a single post`, async () => {
+    it(`should return a single cancelamento`, async () => {
       const response = await service.findOne('1');
 
       expect(response).toEqual(fakeCancelamentos[0]);
@@ -80,7 +87,7 @@ describe('CancelamentoService', () => {
       });
     });
 
-    it(`should return nothing when post is not found`, async () => {
+    it(`should return nothing when cancelamento is not found`, async () => {
       jest
         .spyOn(prisma.cancelamento, 'findUnique')
         .mockResolvedValue(undefined);
@@ -96,7 +103,7 @@ describe('CancelamentoService', () => {
   });
 
   describe('create', () => {
-    it(`should create a new post`, async () => {
+    it(`should create a new cancelamento`, async () => {
       const createFakeAit = new CreateCancelamentoDto(fakeCancelamentos[0]);
 
       const response = await service.create(createFakeAit);
@@ -110,7 +117,7 @@ describe('CancelamentoService', () => {
   });
 
   describe('updateOne', () => {
-    it(`should update a post`, async () => {
+    it(`should update a cancelamento`, async () => {
       const createFakeAit = new UpdateCancelamentoDto(fakeCancelamentos[0]);
 
       const response = await service.update('1', createFakeAit);
@@ -123,8 +130,8 @@ describe('CancelamentoService', () => {
       });
     });
 
-    it(`should return NotFoundException when no post is found`, async () => {
-      const unexistingPost = new UpdateCancelamentoDto({
+    it(`should return NotFoundException when no cancelamento is found`, async () => {
+      const unexistingCancelamento = new UpdateCancelamentoDto({
         id: '42',
         aceita: false,
         aitId: '1',
@@ -135,20 +142,20 @@ describe('CancelamentoService', () => {
       jest.spyOn(prisma.cancelamento, 'update').mockRejectedValue(new Error());
 
       try {
-        await service.update('42', unexistingPost);
+        await service.update('42', unexistingCancelamento);
       } catch (error) {
         expect(error).toEqual(new NotFoundException());
       }
 
       expect(prisma.cancelamento.update).toHaveBeenCalledWith({
         where: { id: '42' },
-        data: unexistingPost,
+        data: unexistingCancelamento,
       });
     });
   });
 
   describe('deleteOne', () => {
-    it(`should delete post and return empty body`, async () => {
+    it(`should delete cancelamento and return empty body`, async () => {
       expect(await service.remove('1')).toBeUndefined();
       expect(prisma.cancelamento.delete).toHaveBeenCalledTimes(1);
       expect(prisma.cancelamento.delete).toHaveBeenCalledWith({
@@ -156,7 +163,7 @@ describe('CancelamentoService', () => {
       });
     });
 
-    it(`should return NotFoundException if post does not exist`, async () => {
+    it(`should return NotFoundException if cancelamento does not exist`, async () => {
       jest.spyOn(prisma.cancelamento, 'delete').mockRejectedValue(new Error());
 
       try {

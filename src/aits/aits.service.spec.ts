@@ -5,6 +5,7 @@ import { Ait } from './entities/ait.entity';
 import { CreateAitDto } from './dto/create-ait.dto';
 import { UpdateAitDto } from './dto/update-ait.dto';
 import { NotFoundException } from '@nestjs/common';
+import { MessageProducer } from 'src/sqs/producer/producer.service';
 
 const fakeAits: Ait[] = [
   {
@@ -44,6 +45,10 @@ const prismaMock = {
   },
 };
 
+const sqsMock = {
+  sendMessage: jest.fn(),
+};
+
 describe('AitsService', () => {
   let service: AitsService;
   let prisma: PrismaService;
@@ -53,6 +58,7 @@ describe('AitsService', () => {
       providers: [
         AitsService,
         { provide: PrismaService, useValue: prismaMock },
+        { provide: MessageProducer, useValue: sqsMock },
       ],
     }).compile();
 
@@ -65,7 +71,7 @@ describe('AitsService', () => {
   });
 
   describe('findAll', () => {
-    it(`should return an array of posts`, async () => {
+    it(`should return an array of aits`, async () => {
       const response = await service.findAll();
 
       expect(response).toEqual(fakeAits);
@@ -75,7 +81,7 @@ describe('AitsService', () => {
   });
 
   describe('findOne', () => {
-    it(`should return a single post`, async () => {
+    it(`should return a single ait`, async () => {
       const response = await service.findOne('1');
 
       expect(response).toEqual(fakeAits[0]);
@@ -85,7 +91,7 @@ describe('AitsService', () => {
       });
     });
 
-    it(`should return nothing when post is not found`, async () => {
+    it(`should return nothing when ait is not found`, async () => {
       jest.spyOn(prisma.ait, 'findUnique').mockResolvedValue(undefined);
 
       const response = await service.findOne('99');
@@ -99,7 +105,7 @@ describe('AitsService', () => {
   });
 
   describe('create', () => {
-    it(`should create a new post`, async () => {
+    it(`should create a new ait`, async () => {
       const createFakeAit = new CreateAitDto(fakeAits[0]);
 
       const response = await service.create(createFakeAit);
@@ -113,7 +119,7 @@ describe('AitsService', () => {
   });
 
   describe('updateOne', () => {
-    it(`should update a post`, async () => {
+    it(`should update a ait`, async () => {
       const createFakeAit = new UpdateAitDto(fakeAits[0]);
 
       const response = await service.update('1', createFakeAit);
@@ -126,8 +132,8 @@ describe('AitsService', () => {
       });
     });
 
-    it(`should return NotFoundException when no post is found`, async () => {
-      const unexistingPost = new UpdateAitDto({
+    it(`should return NotFoundException when no ait is found`, async () => {
+      const unexistingAit = new UpdateAitDto({
         id: '42',
         nome: 'não utilizar cinto de segurança',
         data: new Date(Date.now()),
@@ -139,26 +145,26 @@ describe('AitsService', () => {
       jest.spyOn(prisma.ait, 'update').mockRejectedValue(new Error());
 
       try {
-        await service.update('42', unexistingPost);
+        await service.update('42', unexistingAit);
       } catch (error) {
         expect(error).toEqual(new NotFoundException());
       }
 
       expect(prisma.ait.update).toHaveBeenCalledWith({
         where: { id: '42' },
-        data: unexistingPost,
+        data: unexistingAit,
       });
     });
   });
 
   describe('deleteOne', () => {
-    it(`should delete post and return empty body`, async () => {
+    it(`should delete ait and return empty body`, async () => {
       expect(await service.remove('1')).toBeUndefined();
       expect(prisma.ait.delete).toHaveBeenCalledTimes(1);
       expect(prisma.ait.delete).toHaveBeenCalledWith({ where: { id: '1' } });
     });
 
-    it(`should return NotFoundException if post does not exist`, async () => {
+    it(`should return NotFoundException if ait does not exist`, async () => {
       jest.spyOn(prisma.ait, 'delete').mockRejectedValue(new Error());
 
       try {

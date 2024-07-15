@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SqsService } from '@ssut/nestjs-sqs';
+import { randomUUID } from 'crypto';
 
 const config = {
   QUEUE_NAME: process.env.QUEUE_NAME,
@@ -11,12 +12,15 @@ const config = {
 @Injectable()
 export class MessageProducer {
   constructor(private readonly sqsService: SqsService) {}
+
   async sendMessage(body) {
-    console.log('AWS Config ', config);
     const message: any = JSON.stringify(body);
 
     try {
-      await this.sqsService.send(config.QUEUE_NAME, message);
+      await this.sqsService.send(config.QUEUE_NAME, {
+        id: randomUUID(),
+        body: message,
+      });
     } catch (error) {
       console.log('error in producing message', error);
     }

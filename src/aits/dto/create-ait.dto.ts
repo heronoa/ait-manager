@@ -10,8 +10,8 @@ export class CreateAitDto extends Ait {
   id?: string;
   @ApiProperty()
   nome: string;
-  @ApiProperty()
-  data: Date;
+  @ApiProperty({ default: new Date(Date.now()) })
+  data?: Date;
   @ApiProperty()
   nome_do_agente: string;
   @ApiProperty()
