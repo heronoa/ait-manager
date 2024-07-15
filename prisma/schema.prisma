@@ -31,7 +31,7 @@ model Cancelamento {
   ait           Ait     @relation(fields: [aitId], references: [id])
   justificativa String
   parecer       String?
-  aceita        Boolean
+  aceita        Boolean @default(false)
 
   @@map("cancelamentos")
 }

@@ -2,7 +2,14 @@ import { Module } from '@nestjs/common';
 import { SqsModule } from '@ssut/nestjs-sqs';
 import { MessageHandler } from './messageHandler';
 import * as AWS from 'aws-sdk';
-import { config } from 'src/config';
+
+const config = {
+  QUEUE_NAME: process.env.QUEUE_NAME,
+  QUEUE_URL: process.env.QUEUE_URL,
+  AWS_REGION: process.env.AWS_REGION,
+  ACCESS_KEY_ID: process.env.ACCESS_KEY_ID,
+  SECRET_ACCESS_KEY: process.env.SECRET_ACCESS_KEY,
+};
 
 AWS.config.update({
   region: config.AWS_REGION,
@@ -14,8 +21,8 @@ AWS.config.update({
     SqsModule.register({
       consumers: [
         {
-          name: config.QUEUE_NAME, // name of the queue
-          queueUrl: config.QUEUE_URL, // the url of the queue
+          name: config.QUEUE_NAME,
+          queueUrl: config.QUEUE_URL,
           region: config.AWS_REGION,
         },
       ],
