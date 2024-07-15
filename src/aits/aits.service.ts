@@ -1,11 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/db/prisma.service';
 import { CreateAitDto } from './dto/create-ait.dto';
 import { UpdateAitDto } from './dto/update-ait.dto';
+import { MessageProducer } from 'src/sqs/producer/producer.service';
 
 @Injectable()
 export class AitsService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly sqsService: MessageProducer,
+  ) {}
 
   create(createAitDto: CreateAitDto) {
     return this.prismaService.ait.create({ data: createAitDto });
@@ -41,6 +49,16 @@ export class AitsService {
       });
     } catch (error) {
       throw new NotFoundException();
+    }
+  }
+
+  async sendAitCreationMessage(detalhes: string) {
+    try {
+      const message = 'Nova Auto Infração de Trânsito \n Detalhes: ' + detalhes;
+
+      this.sqsService.sendMessage(message);
+    } catch (error) {
+      throw new InternalServerErrorException();
     }
   }
 }

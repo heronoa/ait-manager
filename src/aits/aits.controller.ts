@@ -17,6 +17,8 @@ export class AitsController {
 
   @Post()
   create(@Body() createAitDto: CreateAitDto) {
+    this.aitsService.sendAitCreationMessage(JSON.stringify(createAitDto));
+
     return this.aitsService.create(createAitDto);
   }
 

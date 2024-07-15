@@ -10,10 +10,15 @@ import {
 import { CancelamentosService } from './cancelamentos.service';
 import { CreateCancelamentoDto } from './dto/create-cancelamento.dto';
 import { UpdateCancelamentoDto } from './dto/update-cancelamento.dto';
+import { AitsService } from 'src/aits/aits.service';
+import { UpdateAitDto } from 'src/aits/dto/update-ait.dto';
 
 @Controller('cancelamentos')
 export class CancelamentosController {
-  constructor(private readonly cancelamentosService: CancelamentosService) {}
+  constructor(
+    private readonly cancelamentosService: CancelamentosService,
+    private readonly aitsService: AitsService,
+  ) {}
 
   @Post()
   create(@Body() createCancelamentoDto: CreateCancelamentoDto) {
@@ -35,6 +40,22 @@ export class CancelamentosController {
     @Param('id') id: string,
     @Body() updateCancelamentoDto: UpdateCancelamentoDto,
   ) {
+    if (updateCancelamentoDto.aceita === true) {
+      const newAit = {
+        status: 'CANCELADO',
+        id: updateCancelamentoDto.aitId,
+        nome: undefined,
+        data: undefined,
+        nome_do_agente: undefined,
+        nome_do_condutor: undefined,
+      };
+
+      this.aitsService.update(
+        updateCancelamentoDto.aitId,
+        new UpdateAitDto(newAit),
+      );
+    }
+
     return this.cancelamentosService.update(id, updateCancelamentoDto);
   }
 

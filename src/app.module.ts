@@ -7,10 +7,11 @@ import { CancelamentosController } from './cancelamentos/cancelamentos.controlle
 import { AitsService } from './aits/aits.service';
 import { CancelamentosService } from './cancelamentos/cancelamentos.service';
 import { SqsModule } from './sqs/sqs.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   controllers: [AppController, AitsController, CancelamentosController],
   providers: [AppService, PrismaService, AitsService, CancelamentosService],
-  imports: [SqsModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), SqsModule],
 })
 export class AppModule {}
