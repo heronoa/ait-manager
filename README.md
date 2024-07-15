@@ -32,6 +32,13 @@
 $ yarn install
 ```
 
+## Database
+To run PostgreSQL locally
+
+```bash
+$ docker compose uo
+```
+
 ## Running the app
 
 ```bash

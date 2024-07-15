@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AitsModule } from './aits/aits.module';
 import { PrismaService } from './db/prisma.service';
-import { CancelamentosModule } from './cancelamentos/cancelamentos.module';
+import { AitsController } from './aits/aits.controller';
+import { CancelamentosController } from './cancelamentos/cancelamentos.controller';
+import { AitsService } from './aits/aits.service';
+import { CancelamentosService } from './cancelamentos/cancelamentos.service';
 
 @Module({
-  imports: [AitsModule, CancelamentosModule],
-  controllers: [AppController],
-  providers: [AppService, PrismaService],
+  controllers: [AppController, AitsController, CancelamentosController],
+  providers: [AppService, PrismaService, AitsService, CancelamentosService],
 })
 export class AppModule {}
