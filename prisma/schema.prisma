@@ -16,7 +16,7 @@ datasource db {
 model Ait {
   id               String        @id @unique @default(uuid())
   nome             String
-  data             DateTime
+  data             DateTime?      @default(now())
   nome_do_agente   String
   nome_do_condutor String
   status           String        @default("EM_ANDAMENTO")
