@@ -18,11 +18,14 @@ export class CancelamentosService {
   }
 
   findAll() {
-    return this.prismaService.cancelamento.findMany();
+    return this.prismaService.cancelamento.findMany({ include: { ait: true } });
   }
 
   findOne(id: string) {
-    return this.prismaService.cancelamento.findUnique({ where: { id } });
+    return this.prismaService.cancelamento.findUnique({
+      where: { id },
+      include: { ait: true },
+    });
   }
 
   async update(id: string, updateCancelamentoDto: UpdateCancelamentoDto) {
