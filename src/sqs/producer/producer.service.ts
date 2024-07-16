@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { SqsService } from '@ssut/nestjs-sqs';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 
 @Injectable()
 export class MessageProducer {
-  constructor(private readonly sqsService: SqsService) {}
-  client;
+  constructor() {}
+  private client: SQSClient | null = null;
 
   async onModuleInit() {
     this.client = new SQSClient({

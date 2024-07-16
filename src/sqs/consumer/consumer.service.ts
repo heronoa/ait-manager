@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { SqsMessageHandler } from '@ssut/nestjs-sqs';
 import { ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class MessageHandler {
   constructor() {}
 
-  client;
+  private client: SQSClient | null = null;
 
   async onModuleInit() {
     this.client = new SQSClient({
@@ -25,23 +25,25 @@ export class MessageHandler {
         MaxNumberOfMessages: 10,
         MessageAttributeNames: ['All'],
         QueueUrl: queueUrl,
-        WaitTimeSeconds: 20,
+        WaitTimeSeconds: 5,
         VisibilityTimeout: 20,
       }),
     );
 
-  @SqsMessageHandler(process.env.QUEUE_NAME, false)
+  @Cron(CronExpression.EVERY_5_SECONDS)
   async handleMessage() {
     const queueUrl = process.env.QUEUE_URL;
 
     const { Messages } = await this.receiveMessage(queueUrl);
 
     if (!Messages) {
+      console.log('[SQS MESSAGE] No messages find');
       return;
     }
 
+    console.log('[SQS MESSAGE] New Messages: ', Messages.length);
     for (let index = 0; index < Messages.length; index++) {
-      console.log('[SQS MESSAGE] ' + Messages[index]);
+      console.log('[SQS MESSAGE] ' + JSON.stringify(Messages[index]));
     }
 
     // if (Messages.length === 1) {
