@@ -1,0 +1,127 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "AIT-manager",
+    "collectionId": "9ede8698-0c11-4fd7-b44f-17bbf0b84a45",
+    "dateExported": "2024-07-16T14:34:38.123Z",
+    "version": "1.2",
+    "folders": [],
+    "requests": [
+        {
+            "_id": "8999f7c4-e199-4f87-b35a-3e3d77028405",
+            "colId": "9ede8698-0c11-4fd7-b44f-17bbf0b84a45",
+            "containerId": "",
+            "name": "Add AIT",
+            "url": "http://localhost:3000/api/v1/aits",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2024-07-15T20:17:23.682Z",
+            "modified": "2024-07-15T20:17:23.682Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\r\n    \"nome\": \"Acima do limite de velocidade\",\r\n    \"nome_do_agente\": \"Marco Aurelio\",\r\n    \"nome_do_condutor\": \"João da Silva\",\r\n    \"status\": \"EM_ANDAMENTO\"\r\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "f07221de-4a6a-47c0-9cec-eb7b95be198d",
+            "colId": "9ede8698-0c11-4fd7-b44f-17bbf0b84a45",
+            "containerId": "",
+            "name": "List Aits",
+            "url": "http://localhost:3000/api/v1/aits/",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2024-07-15T20:17:31.180Z",
+            "modified": "2024-07-15T20:21:57.127Z",
+            "headers": []
+        },
+        {
+            "_id": "7f391028-d019-423a-8599-edfba2cb3716",
+            "colId": "9ede8698-0c11-4fd7-b44f-17bbf0b84a45",
+            "containerId": "",
+            "name": "Add Cancelamento",
+            "url": "http://localhost:3000/api/v1/cancelamentos/",
+            "method": "POST",
+            "sortNum": 20000,
+            "created": "2024-07-15T20:23:30.109Z",
+            "modified": "2024-07-15T20:26:36.576Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"aitId\": \"613f5b8a-24fd-48dd-b590-2014de4445c0\",\n  \"justificativa\": \"Não estava dirigindo na data da autoação\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "8b5fa899-ba23-4755-b4af-4253f1208b72",
+            "colId": "9ede8698-0c11-4fd7-b44f-17bbf0b84a45",
+            "containerId": "",
+            "name": "List Cancelamentos",
+            "url": "http://localhost:3000/api/v1/cancelamentos/",
+            "method": "GET",
+            "sortNum": 25000,
+            "created": "2024-07-15T20:23:06.558Z",
+            "modified": "2024-07-15T20:23:22.154Z",
+            "headers": []
+        },
+        {
+            "_id": "2c0fffde-747f-495e-8153-bf3cf8a738c3",
+            "colId": "9ede8698-0c11-4fd7-b44f-17bbf0b84a45",
+            "containerId": "",
+            "name": "Edit Ait",
+            "url": "http://localhost:3000/api/v1/aits/2eff9412-5a28-4ef0-bdfb-9828b675a868",
+            "method": "PATCH",
+            "sortNum": 30000,
+            "created": "2024-07-15T20:17:44.549Z",
+            "modified": "2024-07-15T20:20:24.040Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n    \"nome\": \"Estacionado em lugar proibido\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "ae8ced0a-2e18-46a8-ac5c-de0afd054a16",
+            "colId": "9ede8698-0c11-4fd7-b44f-17bbf0b84a45",
+            "containerId": "",
+            "name": "Edit Cancelamento",
+            "url": "http://localhost:3000/api/v1/cancelamentos/af2b9e81-6a54-4cbf-bb2a-a0ee07f440c6",
+            "method": "PATCH",
+            "sortNum": 35000,
+            "created": "2024-07-15T20:26:53.202Z",
+            "modified": "2024-07-15T20:35:23.220Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"aitId\": \"0e206a65-de5d-47c9-959d-8b1274f4e041\",\n  \"aceita\": true,\n  \"parecer\": \"alibi procede\"\n}",
+                "form": []
+            }
+        },
+        {
+            "_id": "1642eb53-9277-47d5-a2c3-bdc1b29a8eea",
+            "colId": "9ede8698-0c11-4fd7-b44f-17bbf0b84a45",
+            "containerId": "",
+            "name": "Fetch One Ait",
+            "url": "http://localhost:3000/api/v1/aits/2eff9412-5a28-4ef0-bdfb-9828b675a868",
+            "method": "GET",
+            "sortNum": 40000,
+            "created": "2024-07-15T20:20:33.884Z",
+            "modified": "2024-07-15T20:21:00.062Z",
+            "headers": []
+        },
+        {
+            "_id": "79172467-bab9-44d9-b409-e4e616cb1090",
+            "colId": "9ede8698-0c11-4fd7-b44f-17bbf0b84a45",
+            "containerId": "",
+            "name": "Delete A Ait",
+            "url": "http://localhost:3000/api/v1/aits/944ced30-8571-48f5-94a3-bc617a79354a",
+            "method": "DELETE",
+            "sortNum": 50000,
+            "created": "2024-07-15T20:21:08.468Z",
+            "modified": "2024-07-15T20:21:32.198Z",
+            "headers": []
+        }
+    ],
+    "ref": "0qF7bXXLK7t-S9_JOPo-C9OxB7n89Z1IwBvlGg5FWtfQ7dA2edR8P0VD8lNbshnB3wte-JOdYLY_iPAU4oVVkg"
+}
