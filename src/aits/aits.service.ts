@@ -61,7 +61,7 @@ export class AitsService {
     try {
       const message = 'Nova Auto Infração de Trânsito \n Detalhes: ' + detalhes;
 
-      this.sqsService.sendMessage(message);
+      this.sqsService.sendMessage('Nova Auto Infração de Trânsito', message);
     } catch (error) {
       throw new InternalServerErrorException();
     }
