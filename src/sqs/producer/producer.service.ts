@@ -1,28 +1,36 @@
 import { Injectable } from '@nestjs/common';
-import { SqsService } from '@ssut/nestjs-sqs';
-import { randomUUID } from 'crypto';
+import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 
-const config = {
-  QUEUE_NAME: process.env.QUEUE_NAME,
-  QUEUE_URL: process.env.QUEUE_URL,
-  AWS_REGION: process.env.AWS_REGION,
-  ACCESS_KEY_ID: process.env.ACCESS_KEY_ID,
-  SECRET_ACCESS_KEY: process.env.SECRET_ACCESS_KEY,
-};
 @Injectable()
 export class MessageProducer {
-  constructor(private readonly sqsService: SqsService) {}
+  constructor() {}
+  private client: SQSClient | null = null;
 
-  async sendMessage(body) {
-    const message: any = JSON.stringify(body);
+  async onModuleInit() {
+    this.client = new SQSClient({
+      region: process.env.AWS_REGION,
+      credentials: {
+        accessKeyId: process.env.ACCESS_KEY_ID,
+        secretAccessKey: process.env.SECRET_ACCESS_KEY,
+      },
+    });
+  }
 
-    try {
-      await this.sqsService.send(config.QUEUE_NAME, {
-        id: randomUUID(),
-        body: message,
-      });
-    } catch (error) {
-      console.log('error in producing message', error);
-    }
+  async sendMessage(title: string, details: string) {
+    const command = new SendMessageCommand({
+      QueueUrl: process.env.QUEUE_URL,
+      DelaySeconds: 10,
+      MessageAttributes: {
+        Title: {
+          DataType: 'String',
+          StringValue: title,
+        },
+      },
+      MessageBody: details,
+    });
+
+    const response = await this.client.send(command);
+    console.log(response);
+    return response;
   }
 }

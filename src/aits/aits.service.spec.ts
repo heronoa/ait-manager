@@ -76,7 +76,9 @@ describe('AitsService', () => {
 
       expect(response).toEqual(fakeAits);
       expect(prisma.ait.findMany).toHaveBeenCalledTimes(1);
-      expect(prisma.ait.findMany).toHaveBeenCalledWith(/* nothing */);
+      expect(prisma.ait.findMany).toHaveBeenCalledWith({
+        include: { Cancelamento: true },
+      });
     });
   });
 
@@ -88,6 +90,7 @@ describe('AitsService', () => {
       expect(prisma.ait.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.ait.findUnique).toHaveBeenCalledWith({
         where: { id: '1' },
+        include: { Cancelamento: true },
       });
     });
 
@@ -100,6 +103,7 @@ describe('AitsService', () => {
       expect(prisma.ait.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.ait.findUnique).toHaveBeenCalledWith({
         where: { id: '99' },
+        include: { Cancelamento: true },
       });
     });
   });

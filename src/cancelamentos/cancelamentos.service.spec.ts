@@ -72,7 +72,9 @@ describe('CancelamentoService', () => {
 
       expect(response).toEqual(fakeCancelamentos);
       expect(prisma.cancelamento.findMany).toHaveBeenCalledTimes(1);
-      expect(prisma.cancelamento.findMany).toHaveBeenCalledWith(/* nothing */);
+      expect(prisma.cancelamento.findMany).toHaveBeenCalledWith({
+        include: { ait: true },
+      });
     });
   });
 
@@ -84,6 +86,7 @@ describe('CancelamentoService', () => {
       expect(prisma.cancelamento.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.cancelamento.findUnique).toHaveBeenCalledWith({
         where: { id: '1' },
+        include: { ait: true },
       });
     });
 
@@ -98,6 +101,7 @@ describe('CancelamentoService', () => {
       expect(prisma.cancelamento.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.cancelamento.findUnique).toHaveBeenCalledWith({
         where: { id: '99' },
+        include: { ait: true },
       });
     });
   });

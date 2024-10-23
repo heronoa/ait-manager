@@ -25,11 +25,14 @@ export class AitsService {
   }
 
   findAll() {
-    return this.prismaService.ait.findMany();
+    return this.prismaService.ait.findMany({ include: { Cancelamento: true } });
   }
 
   findOne(id: string) {
-    return this.prismaService.ait.findUnique({ where: { id } });
+    return this.prismaService.ait.findUnique({
+      where: { id },
+      include: { Cancelamento: true },
+    });
   }
 
   async update(id: string, updateAitDto: UpdateAitDto) {
@@ -61,7 +64,7 @@ export class AitsService {
     try {
       const message = 'Nova Auto Infração de Trânsito \n Detalhes: ' + detalhes;
 
-      this.sqsService.sendMessage(message);
+      this.sqsService.sendMessage('Nova Auto Infração de Trânsito', message);
     } catch (error) {
       throw new InternalServerErrorException();
     }
