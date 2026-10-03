@@ -1,69 +1,110 @@
-import { Injectable } from '@nestjs/common';
-import { ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import {
+  OnApplicationBootstrap,
+  OnModuleDestroy,
+  Injectable,
+} from '@nestjs/common';
+import {
+  DeleteMessageBatchCommand,
+  Message,
+  ReceiveMessageCommand,
+  SQSClient,
+} from '@aws-sdk/client-sqs';
+import { createSqsClient } from '../sqs-client.factory';
+import { MessageDispatcher } from './message-dispatcher';
+
+const BACKOFF_MS = 5000;
 
 @Injectable()
-export class MessageHandler {
-  constructor() {}
-
+export class MessageHandler implements OnApplicationBootstrap, OnModuleDestroy {
   private client: SQSClient | null = null;
+  private readonly abortController = new AbortController();
+  private loop: Promise<void> | null = null;
 
-  async onModuleInit() {
-    this.client = new SQSClient({
-      region: process.env.AWS_REGION,
-      credentials: {
-        accessKeyId: process.env.ACCESS_KEY_ID,
-        secretAccessKey: process.env.SECRET_ACCESS_KEY,
-      },
-    });
-  }
+  constructor(private readonly dispatcher: MessageDispatcher) {}
 
-  receiveMessage = (queueUrl) =>
-    this.client.send(
-      new ReceiveMessageCommand({
-        AttributeNames: ['All'],
-        MaxNumberOfMessages: 10,
-        MessageAttributeNames: ['All'],
-        QueueUrl: queueUrl,
-        WaitTimeSeconds: 5,
-        VisibilityTimeout: 20,
-      }),
-    );
-
-  @Cron(CronExpression.EVERY_5_SECONDS)
-  async handleMessage() {
-    const queueUrl = process.env.QUEUE_URL;
-
-    const { Messages } = await this.receiveMessage(queueUrl);
-
-    if (!Messages) {
-      console.log('[SQS MESSAGE] No messages find');
+  onApplicationBootstrap() {
+    if (process.env.SQS_CONSUMER_ENABLED === 'false') {
+      console.log('[SQS MESSAGE] consumer desabilitado');
       return;
     }
 
-    console.log('[SQS MESSAGE] New Messages: ', Messages.length);
-    for (let index = 0; index < Messages.length; index++) {
-      console.log('[SQS MESSAGE] ' + JSON.stringify(Messages[index]));
+    this.client = createSqsClient();
+    this.loop = this.poll();
+  }
+
+  async onModuleDestroy() {
+    this.abortController.abort();
+    await this.loop;
+  }
+
+  private async poll(): Promise<void> {
+    const { signal } = this.abortController;
+    const queueUrl = process.env.QUEUE_URL;
+
+    while (!signal.aborted) {
+      try {
+        const { Messages = [] } = await this.client.send(
+          new ReceiveMessageCommand({
+            AttributeNames: ['All'],
+            MaxNumberOfMessages: 10,
+            MessageAttributeNames: ['All'],
+            QueueUrl: queueUrl,
+            WaitTimeSeconds: 10,
+            VisibilityTimeout: 30,
+          }),
+          { abortSignal: signal },
+        );
+
+        const processed = await this.processBatch(Messages);
+        if (processed.length > 0) {
+          await this.deleteBatch(queueUrl, processed);
+        }
+      } catch (error) {
+        if (signal.aborted) break;
+        console.error('[SQS MESSAGE] erro no polling, aguardando', error);
+        await this.sleep(BACKOFF_MS);
+      }
+    }
+  }
+
+  private async processBatch(messages: Message[]): Promise<Message[]> {
+    const processed: Message[] = [];
+
+    for (const message of messages) {
+      try {
+        await this.dispatcher.dispatch(message.Body ?? '');
+        processed.push(message);
+      } catch (error) {
+        console.error(`[SQS MESSAGE] falha em ${message.MessageId}`, error);
+      }
     }
 
-    // if (Messages.length === 1) {
-    //   console.log(Messages[0].Body);
-    //   await this.client.send(
-    //     new DeleteMessageCommand({
-    //       QueueUrl: queueUrl,
-    //       ReceiptHandle: Messages[0].ReceiptHandle,
-    //     }),
-    //   );
-    // } else {
-    //   await this.client.send(
-    //     new DeleteMessageBatchCommand({
-    //       QueueUrl: queueUrl,
-    //       Entries: Messages.map((message) => ({
-    //         Id: message.MessageId,
-    //         ReceiptHandle: message.ReceiptHandle,
-    //       })),
-    //     }),
-    //   );
-    // }
+    return processed;
+  }
+
+  private async deleteBatch(queueUrl: string, messages: Message[]) {
+    await this.client.send(
+      new DeleteMessageBatchCommand({
+        QueueUrl: queueUrl,
+        Entries: messages.map((message) => ({
+          Id: message.MessageId,
+          ReceiptHandle: message.ReceiptHandle,
+        })),
+      }),
+    );
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => {
+      const timer = setTimeout(resolve, ms);
+      this.abortController.signal.addEventListener(
+        'abort',
+        () => {
+          clearTimeout(timer);
+          resolve();
+        },
+        { once: true },
+      );
+    });
   }
 }

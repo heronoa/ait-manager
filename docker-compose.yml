@@ -12,6 +12,18 @@ services:
     volumes:
       - pgdata:/data/postgres
 
+  localstack:
+    image: localstack/localstack:3.8
+    container_name: ait-manager-localstack
+    restart: always
+    ports:
+      - 4566:4566
+    environment:
+      - SERVICES=sqs
+      - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      - ./localstack/init:/etc/localstack/init/ready.d
+
 volumes:
   pgdata:
     driver: local
