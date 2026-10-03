@@ -122,6 +122,31 @@ describe('AitsService', () => {
     });
   });
 
+  describe('create — envio para a fila', () => {
+    it('envia AIT_CRIADA com o id persistido, depois do insert', async () => {
+      await service.create(new CreateAitDto(fakeAits[0]));
+
+      expect(sqsMock.sendMessage).toHaveBeenCalledTimes(1);
+      expect(sqsMock.sendMessage).toHaveBeenCalledWith('AIT_CRIADA', {
+        id: '1',
+        nome: 'não utilizar cinto de segurança',
+        nome_do_agente: 'Marco Aurelio',
+        nome_do_condutor: 'João da Silva',
+      });
+      expect(prismaMock.ait.create.mock.invocationCallOrder[0]).toBeLessThan(
+        sqsMock.sendMessage.mock.invocationCallOrder[0],
+      );
+    });
+
+    it('propaga o erro quando o envio para a fila falha', async () => {
+      sqsMock.sendMessage.mockRejectedValueOnce(new Error('sqs indisponível'));
+
+      await expect(
+        service.create(new CreateAitDto(fakeAits[0])),
+      ).rejects.toThrow('sqs indisponível');
+    });
+  });
+
   describe('updateOne', () => {
     it(`should update a ait`, async () => {
       const createFakeAit = new UpdateAitDto(fakeAits[0]);

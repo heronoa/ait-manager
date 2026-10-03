@@ -1,36 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
+import { createSqsClient } from '../sqs-client.factory';
 
 @Injectable()
 export class MessageProducer {
-  constructor() {}
   private client: SQSClient | null = null;
 
   async onModuleInit() {
-    this.client = new SQSClient({
-      region: process.env.AWS_REGION,
-      credentials: {
-        accessKeyId: process.env.ACCESS_KEY_ID,
-        secretAccessKey: process.env.SECRET_ACCESS_KEY,
-      },
-    });
+    this.client = createSqsClient();
   }
 
-  async sendMessage(title: string, details: string) {
+  async sendMessage(type: string, payload: object) {
     const command = new SendMessageCommand({
       QueueUrl: process.env.QUEUE_URL,
-      DelaySeconds: 10,
       MessageAttributes: {
-        Title: {
+        Type: {
           DataType: 'String',
-          StringValue: title,
+          StringValue: type,
         },
       },
-      MessageBody: details,
+      MessageBody: JSON.stringify({ type, payload }),
     });
 
-    const response = await this.client.send(command);
-    console.log(response);
-    return response;
+    return this.client.send(command);
   }
 }

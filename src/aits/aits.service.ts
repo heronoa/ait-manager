@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/db/prisma.service';
 import { CreateAitDto } from './dto/create-ait.dto';
 import { UpdateAitDto } from './dto/update-ait.dto';
@@ -16,12 +12,15 @@ export class AitsService {
   ) {}
 
   async create(createAitDto: CreateAitDto) {
+    let ait: Awaited<ReturnType<PrismaService['ait']['create']>>;
     try {
-      this.sendAitCreationMessage(JSON.stringify(createAitDto));
-      return await this.prismaService.ait.create({ data: createAitDto });
+      ait = await this.prismaService.ait.create({ data: createAitDto });
     } catch (error) {
       throw new NotFoundException();
     }
+
+    await this.sendAitCreationMessage(ait);
+    return ait;
   }
 
   findAll() {
@@ -60,13 +59,17 @@ export class AitsService {
     }
   }
 
-  async sendAitCreationMessage(detalhes: string) {
-    try {
-      const message = 'Nova Auto Infração de Trânsito \n Detalhes: ' + detalhes;
-
-      this.sqsService.sendMessage('Nova Auto Infração de Trânsito', message);
-    } catch (error) {
-      throw new InternalServerErrorException();
-    }
+  async sendAitCreationMessage(ait: {
+    id: string;
+    nome: string;
+    nome_do_agente: string;
+    nome_do_condutor: string;
+  }) {
+    await this.sqsService.sendMessage('AIT_CRIADA', {
+      id: ait.id,
+      nome: ait.nome,
+      nome_do_agente: ait.nome_do_agente,
+      nome_do_condutor: ait.nome_do_condutor,
+    });
   }
 }
